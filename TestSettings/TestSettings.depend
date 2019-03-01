@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1551448398 source:d:\projets\embeded\faillist\testsettings\main.c
+	"main.h"
+
+1551371029 d:\projets\embeded\faillist\testsettings\main.h
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+
