@@ -15,5 +15,13 @@ typedef struct failures{
     char COMMENT[1024];
 } failures;
 
+typedef struct failuresMan{
+    char ID_FAILURE[127];
+    char DATETIME[80];
+    char ID_COMPONENT[127];
+    unsigned int LEVEL_CRITICITY;
+    int COMMENT_SIZE;
+    char COMMENT[1024];
+} failuresMan;
 
 #endif // MAIN_H_

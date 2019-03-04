@@ -6,6 +6,23 @@ int printFailure(failures f)
     return (0);
 }
 
+int printFailureMan(failuresMan f)
+{
+    printf("\n\t\t{\n\t\t\t0x%s,\n\t\t\t%s,\n\t\t\t0x%s,\n\t\t\t%d,\n\t\t\t%s,\n\t\t\t%d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
+    return (0);
+}
+
+void cleanBuffer(char commandBuffer[], int size)
+{
+  int it = 0;
+
+  while (it < size)
+  {
+    commandBuffer[it] = '\0';
+    it++;
+  }
+}
+
 int getRandoms(int lower, int upper)
 {
     return ((rand() % (upper - lower + 1)) + lower);
@@ -63,7 +80,6 @@ int generateFailures(failures *failuresList, int numberOfFailures)
         strftime (buffer,80,"%Y/%m/%d - %H:%M:%S",timeinfo);
 
         randomNumber = getRandoms(0, 16);
-        failuresList[iterator].ID_FAILURE = 01000;
         failuresList[iterator].ID_FAILURE = ID_FAILURES_LIST[randomNumber];
 
         strcpy(failuresList[iterator].DATETIME, buffer);
@@ -114,6 +130,7 @@ int autoGeneration(char commandBuffer[])
     };
     int numberOfFailures = 0;
     failures failuresList[100];
+    char ch;
 
     printf("\n\nPlease type the number of failure(s) that you want to generate :\n");
     fgets(commandBuffer, 127, stdin);
@@ -146,12 +163,49 @@ int deleten(char tab[], int size)
     return (0);
 }
 
+failuresMan getUserFailures(int numberOfFailures, int iterator)
+{
+  failuresMan f;
+  time_t rawtime;
+  struct tm *timeinfo;
+  char buffer[80];
+  time(&rawtime);
+  timeinfo = gmtime(&rawtime);
+  char commandBuffer[128];
+  char ch;
+
+  printf("Enter the id of the failure %d\n", iterator +1);
+  while ((ch = getchar()) != '\n' && ch != EOF);
+  cleanBuffer(commandBuffer, 128);
+  fgets(commandBuffer, 127, stdin);
+  deleten(commandBuffer, 15);
+  strncpy(f.ID_FAILURE, commandBuffer, 7);
+  strftime (buffer,80,"%Y/%m/%d - %H:%M:%S",timeinfo);
+  strncpy(f.DATETIME, buffer, 80);
+  printf("Enter the id of the component affected by the failure %d\n", iterator +1);
+  fgets(commandBuffer, 127, stdin);
+  deleten(commandBuffer, 15);
+  strncpy(f.ID_COMPONENT, commandBuffer, 127);
+  printf("Enter the level of criticity of the failure %d (between 1 & 10)\n", iterator +1);
+  fgets(commandBuffer, 127, stdin);
+  deleten(commandBuffer, 15);
+  f.LEVEL_CRITICITY = atoi(commandBuffer);
+  printf("Enter a comment to describe the failure %d\n", iterator+1);
+  fgets(commandBuffer, 127, stdin);
+  deleten(commandBuffer, 15);
+  strncpy(f.COMMENT, commandBuffer, 127);
+  f.COMMENT_SIZE = strlen(f.COMMENT) * sizeof(char);
+  return (f);
+}
+
 int manualGeneration(char commandBuffer[])
 {
     int numberOfFailures = 0;
     int iterator = 0;
     char ID_PLANE[15];
     char TYPE_PLANE[5];
+    failuresMan failuresListMan[4];
+    char ch;
 
     printf("How many failures do you want to generate ? (1 - 3)\n");
     fgets(commandBuffer, 127, stdin);
@@ -168,29 +222,35 @@ int manualGeneration(char commandBuffer[])
         strncpy(TYPE_PLANE, commandBuffer, 5);
         while (iterator < numberOfFailures)
         {
+            failuresListMan[iterator] = getUserFailures(numberOfFailures, iterator);
 
             iterator++;
         }
         printf("{\n\tId_plane : %s,", ID_PLANE);
-        printf("\n\tType_plane: %s,", TYPE_PLANE);
+        printf("\n\tType_plane: 0x%s,", TYPE_PLANE);
         printf("\n\tNb_failures: %d,", numberOfFailures);
         printf("\n\tfailures: [");
-
+        iterator = 0;
+        while (iterator < numberOfFailures)
+        {
+          printFailureMan(failuresListMan[iterator]);
+          iterator++;
+        }
+        printf("\n\t]\n}");
     }
     else
         printf("ERROR\n");
-
         return(0);
 }
 
 int main()
 {
     char commandBuffer[128];
+    char ch;
 
     srand(time(0));
 
     printf("Type :\n1- To use the automatic failure(s) generation\n2- To use the manual failure(s) generation (1 to 3 errors)\n");
-
     fgets(commandBuffer, 127, stdin);
 
     if(strncmp(commandBuffer, "1", 1) == 0)
