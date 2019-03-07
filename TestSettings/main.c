@@ -1,14 +1,18 @@
 #include "main.h"
 
-int printFailure(failures f)
+int printFailure(failures f, char finalJson[])
 {
-    printf("\n\t\t{\n\t\t\t0x%04X,\n\t\t\t%s,\n\t\t\t0x%04X,\n\t\t\t%d,\n\t\t\t%s,\n\t\t\t%d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
+    char failureBuf[1024];
+    sprintf(failureBuf, "\n\t\t{\n\t\t\tId_failure: 0x%04X,\n\t\t\tDate: %s,\n\t\t\tId_component: 0x%04X,\n\t\t\tLevel_criticity: %d,\n\t\t\tComment_failure_size: %s,\n\t\t\tComment_failure: %d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
+    strcat(finalJson, failureBuf);
     return (0);
 }
 
-int printFailureMan(failuresMan f)
+int printFailureMan(failuresMan f, char finalJson[])
 {
-    printf("\n\t\t{\n\t\t\t0x%s,\n\t\t\t%s,\n\t\t\t0x%s,\n\t\t\t%d,\n\t\t\t%s,\n\t\t\t%d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
+    char failureBuf[1024];
+    sprintf(failureBuf, "\n\t\t{\n\t\t\tId_failure: 0x%s,\n\t\t\tDate: %s,\n\t\t\tId_component: 0x%s,\n\t\t\tLevel_criticity: %d,\n\t\t\tComment_failure_size: %s,\n\t\t\tComment_failure: %d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
+    strcat(finalJson, failureBuf);
     return (0);
 }
 
@@ -28,7 +32,7 @@ int getRandoms(int lower, int upper)
     return ((rand() % (upper - lower + 1)) + lower);
 }
 
-int generateFailures(failures *failuresList, int numberOfFailures)
+int generateFailures(failures *failuresList, int numberOfFailures, char finalJson[])
 {
     int iterator = 0;
     const unsigned int ID_FAILURES_LIST[17] = {
@@ -68,6 +72,7 @@ int generateFailures(failures *failuresList, int numberOfFailures)
     };
     char *comment = "No comment";
     size_t commentSize = sizeof(char) * strlen(comment);
+
     while (iterator < numberOfFailures)
     {
         int randomNumber = 0;
@@ -95,14 +100,15 @@ int generateFailures(failures *failuresList, int numberOfFailures)
         failuresList[iterator].COMMENT_SIZE = commentSize;
 
 
-        printFailure(failuresList[iterator]);
+        printFailure(failuresList[iterator], finalJson);
         iterator++;
     }
     return(0);
 }
 
-int autoGeneration(char commandBuffer[])
+int autoGeneration(char commandBuffer[], char finalJson[])
 {
+    char temp[12];
     char ID_PLANE[9][10] = {
         "F-GCQE",
         "UR-AZO",
@@ -138,14 +144,22 @@ int autoGeneration(char commandBuffer[])
     numberOfFailures = atoi(commandBuffer);
 
 
-    printf("{\n\tId_plane : %s,", ID_PLANE[getRandoms(0, 8)]);
-    printf("\n\tType_plane: 0x%04X,", TYPE_PLANE[getRandoms(0, 10)]);
-    printf("\n\tNb_failures: %d,", numberOfFailures);
+    strcat(finalJson, "{\n\tId_plane : ");
+    strcat(finalJson, ID_PLANE[getRandoms(0, 8)]);
+    strcat(finalJson, ",");
+    strcat(finalJson, "\n\tType_plane: ");
+    sprintf(temp, "0x%04X", TYPE_PLANE[getRandoms(0, 10)]);
+    strcat(finalJson, temp);
+    strcat(finalJson, ",");
+    memset(temp, 0, sizeof(temp));
+    strcat(finalJson, "\n\tNb_failures:");
+    sprintf(temp, "%d,", numberOfFailures);
+    strcat(finalJson, temp);
     if (numberOfFailures >= 100)
         numberOfFailures = 99;
-    printf("\n\tfailures: [");
-    generateFailures(failuresList, numberOfFailures);
-    printf("\n\t]\n}");
+    strcat(finalJson, "\n\tfailures: [");
+    generateFailures(failuresList, numberOfFailures, finalJson);
+    strcat(finalJson, "\n\t]\n}");
     return (0);
 }
 
@@ -178,27 +192,27 @@ failuresMan getUserFailures(int numberOfFailures, int iterator)
   while ((ch = getchar()) != '\n' && ch != EOF);
   cleanBuffer(commandBuffer, 128);
   fgets(commandBuffer, 127, stdin);
-  deleten(commandBuffer, 15);
+  deleten(commandBuffer, 127);
   strncpy(f.ID_FAILURE, commandBuffer, 7);
   strftime (buffer,80,"%Y/%m/%d - %H:%M:%S",timeinfo);
   strncpy(f.DATETIME, buffer, 80);
   printf("Enter the id of the component affected by the failure %d\n", iterator +1);
   fgets(commandBuffer, 127, stdin);
-  deleten(commandBuffer, 15);
+  deleten(commandBuffer, 127);
   strncpy(f.ID_COMPONENT, commandBuffer, 127);
   printf("Enter the level of criticity of the failure %d (between 1 & 10)\n", iterator +1);
   fgets(commandBuffer, 127, stdin);
-  deleten(commandBuffer, 15);
+  deleten(commandBuffer, 127);
   f.LEVEL_CRITICITY = atoi(commandBuffer);
   printf("Enter a comment to describe the failure %d\n", iterator+1);
   fgets(commandBuffer, 127, stdin);
-  deleten(commandBuffer, 15);
+  deleten(commandBuffer, 127);
   strncpy(f.COMMENT, commandBuffer, 127);
   f.COMMENT_SIZE = strlen(f.COMMENT) * sizeof(char);
   return (f);
 }
 
-int manualGeneration(char commandBuffer[])
+int manualGeneration(char commandBuffer[], char finalJson[])
 {
     int numberOfFailures = 0;
     int iterator = 0;
@@ -206,6 +220,7 @@ int manualGeneration(char commandBuffer[])
     char TYPE_PLANE[5];
     failuresMan failuresListMan[4];
     char ch;
+    char temp[128];
 
     printf("How many failures do you want to generate ? (1 - 3)\n");
     fgets(commandBuffer, 127, stdin);
@@ -226,17 +241,25 @@ int manualGeneration(char commandBuffer[])
 
             iterator++;
         }
-        printf("{\n\tId_plane : %s,", ID_PLANE);
-        printf("\n\tType_plane: 0x%s,", TYPE_PLANE);
-        printf("\n\tNb_failures: %d,", numberOfFailures);
-        printf("\n\tfailures: [");
+        strcat(finalJson, "{\n\tId_plane : ");
+        sprintf(temp, "%s,", ID_PLANE);
+        strcat(finalJson, temp);
+        strcat(finalJson, "\n\tType_plane: ");
+        memset(temp, 0, sizeof(temp));
+        sprintf(temp, "0x%s,", TYPE_PLANE);
+        strcat(finalJson, temp);
+        strcat(finalJson, "\n\tNb_failures: ");
+        memset(temp, 0, sizeof(temp));
+        sprintf(temp, "%d,", numberOfFailures);
+        strcat(finalJson, temp);
+        strcat(finalJson, "\n\tfailures: [");
         iterator = 0;
         while (iterator < numberOfFailures)
         {
-          printFailureMan(failuresListMan[iterator]);
+          printFailureMan(failuresListMan[iterator], finalJson);
           iterator++;
         }
-        printf("\n\t]\n}");
+        strcat(finalJson, "\n\t]\n}");
     }
     else
         printf("ERROR\n");
@@ -247,6 +270,8 @@ int main()
 {
     char commandBuffer[128];
     char ch;
+    char finalJson[10000];
+    char launchCommand[10500] = "./../FailList/a.out \"";
 
     srand(time(0));
 
@@ -254,9 +279,14 @@ int main()
     fgets(commandBuffer, 127, stdin);
 
     if(strncmp(commandBuffer, "1", 1) == 0)
-        autoGeneration(commandBuffer);
+        autoGeneration(commandBuffer, finalJson);
     else if(strncmp(commandBuffer, "2", 1) == 0)
-        manualGeneration(commandBuffer);
-
+        manualGeneration(commandBuffer, finalJson);
+    else
+        printf("Error, launch the program again\n");
+    printf("%s\n", finalJson);
+    strcat(launchCommand, finalJson);
+    strcat(launchCommand, "\"");
+    system(launchCommand);
     return 0;
 }
