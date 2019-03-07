@@ -3,7 +3,7 @@
 int printFailure(failures f, char finalJson[])
 {
     char failureBuf[1024];
-    sprintf(failureBuf, "\n\t\t{\n\t\t\tId_failure: 0x%04X,\n\t\t\tDate: %s,\n\t\t\tId_component: 0x%04X,\n\t\t\tLevel_criticity: %d,\n\t\t\tComment_failure_size: %s,\n\t\t\tComment_failure: %d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
+    sprintf(failureBuf, "\n\t\t{\n\t\t\tId_failure: 0x%04X,\n\t\t\tDate: %d,\n\t\t\tId_component: 0x%04X,\n\t\t\tLevel_criticity: %d,\n\t\t\tComment_failure_size: %s,\n\t\t\tComment_failure: %d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
     strcat(finalJson, failureBuf);
     return (0);
 }
@@ -11,7 +11,7 @@ int printFailure(failures f, char finalJson[])
 int printFailureMan(failuresMan f, char finalJson[])
 {
     char failureBuf[1024];
-    sprintf(failureBuf, "\n\t\t{\n\t\t\tId_failure: 0x%s,\n\t\t\tDate: %s,\n\t\t\tId_component: 0x%s,\n\t\t\tLevel_criticity: %d,\n\t\t\tComment_failure_size: %s,\n\t\t\tComment_failure: %d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
+    sprintf(failureBuf, "\n\t\t{\n\t\t\tId_failure: 0x%s,\n\t\t\tDate: %d,\n\t\t\tId_component: 0x%s,\n\t\t\tLevel_criticity: %d,\n\t\t\tComment_failure_size: %s,\n\t\t\tComment_failure: %d\n\t\t},", f.ID_FAILURE, f.DATETIME, f.ID_COMPONENT, f.LEVEL_CRITICITY, f.COMMENT, f.COMMENT_SIZE);
     strcat(finalJson, failureBuf);
     return (0);
 }
@@ -76,19 +76,24 @@ int generateFailures(failures *failuresList, int numberOfFailures, char finalJso
     while (iterator < numberOfFailures)
     {
         int randomNumber = 0;
-        time_t rawtime;
+
+        /*time_t rawtime;
         struct tm *timeinfo;
         char buffer[80];
         time(&rawtime);
         timeinfo = gmtime(&rawtime);
-
         strftime (buffer,80,"%Y/%m/%d - %H:%M:%S",timeinfo);
+
+        time_t ut = failuresList[iterator].DATETIME;
+        timeinfo = gmtime(&ut);
+        strftime (buffer,80,"%Y/%m/%d - %H:%M:%S",timeinfo);
+        printf("%s", buffer);
+        */
 
         randomNumber = getRandoms(0, 16);
         failuresList[iterator].ID_FAILURE = ID_FAILURES_LIST[randomNumber];
 
-        strcpy(failuresList[iterator].DATETIME, buffer);
-
+        failuresList[iterator].DATETIME = (int)time(NULL);
         randomNumber = getRandoms(0, 13);
         failuresList[iterator].ID_COMPONENT = ID_COMPONENT_LIST[randomNumber];
 
@@ -155,8 +160,8 @@ int autoGeneration(char commandBuffer[], char finalJson[])
     strcat(finalJson, "\n\tNb_failures:");
     sprintf(temp, "%d,", numberOfFailures);
     strcat(finalJson, temp);
-    if (numberOfFailures >= 100)
-        numberOfFailures = 99;
+    if (numberOfFailures >= 1000)
+        numberOfFailures = 999;
     strcat(finalJson, "\n\tfailures: [");
     generateFailures(failuresList, numberOfFailures, finalJson);
     strcat(finalJson, "\n\t]\n}");
@@ -180,11 +185,16 @@ int deleten(char tab[], int size)
 failuresMan getUserFailures(int numberOfFailures, int iterator)
 {
   failuresMan f;
-  time_t rawtime;
+
+  /*time_t rawtime;
   struct tm *timeinfo;
   char buffer[80];
   time(&rawtime);
   timeinfo = gmtime(&rawtime);
+  strftime (buffer,80,"%Y/%m/%d - %H:%M:%S",timeinfo);
+
+  */
+
   char commandBuffer[128];
   char ch;
 
@@ -194,8 +204,8 @@ failuresMan getUserFailures(int numberOfFailures, int iterator)
   fgets(commandBuffer, 127, stdin);
   deleten(commandBuffer, 127);
   strncpy(f.ID_FAILURE, commandBuffer, 7);
-  strftime (buffer,80,"%Y/%m/%d - %H:%M:%S",timeinfo);
-  strncpy(f.DATETIME, buffer, 80);
+
+  f.DATETIME = (int)time(NULL);
   printf("Enter the id of the component affected by the failure %d\n", iterator +1);
   fgets(commandBuffer, 127, stdin);
   deleten(commandBuffer, 127);

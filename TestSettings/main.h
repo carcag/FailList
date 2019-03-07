@@ -8,7 +8,7 @@
 
 typedef struct failures{
     unsigned int ID_FAILURE;
-    char DATETIME[80];
+    unsigned int DATETIME;
     unsigned int ID_COMPONENT;
     unsigned int LEVEL_CRITICITY;
     int COMMENT_SIZE;
@@ -17,7 +17,7 @@ typedef struct failures{
 
 typedef struct failuresMan{
     char ID_FAILURE[127];
-    char DATETIME[80];
+    unsigned int DATETIME;
     char ID_COMPONENT[127];
     unsigned int LEVEL_CRITICITY;
     int COMMENT_SIZE;
